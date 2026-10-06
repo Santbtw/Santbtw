@@ -28,11 +28,15 @@ const Tarjeta: React.FC<{o: Oferta; delay: number; dur: number}> = ({o, delay, d
   const p = prog(f, delay, delay + 20, Easing.bezier(0.34, 1.4, 0.64, 1));
   const cuenta = prog(f, delay + 8, delay + 32, Easing.out(Easing.cubic));
   const kg = prog(f, delay + 26, delay + 38, Easing.bezier(0.34, 1.6, 0.64, 1));
+  // Cuando termina de contar: se tacha el precio anterior y aparece el ahorro.
+  const tachado = prog(f, delay + 36, delay + 50, Easing.inOut(Easing.cubic));
+  const ahorro = prog(f, delay + 52, delay + 64, Easing.bezier(0.34, 1.6, 0.64, 1));
+  const ahorra = o.precioAntes ? o.precioAntes - o.precio : 0;
   return (
     <div
       style={{
         width: 840,
-        height: 790,
+        paddingBottom: 36,
         borderRadius: 30,
         overflow: 'hidden',
         background: C.card,
@@ -43,7 +47,7 @@ const Tarjeta: React.FC<{o: Oferta; delay: number; dur: number}> = ({o, delay, d
         transform: `translateY(${(1 - p) * 140}px) scale(${0.9 + 0.1 * p})`,
       }}
     >
-      <div style={{position: 'relative', height: 520}}>
+      <div style={{position: 'relative', height: 440}}>
         {o.foto ? (
           <KenBurns src={o.foto} dur={dur} from={1.02} to={1.14} dx={-1.5} dy={-2} />
         ) : (
@@ -68,7 +72,26 @@ const Tarjeta: React.FC<{o: Oferta; delay: number; dur: number}> = ({o, delay, d
       </div>
       <div style={{padding: '6px 46px 0'}}>
         <div style={{fontFamily: serif, fontWeight: 800, fontSize: o.nombre.length > 18 ? 58 : 66, color: C.cream, lineHeight: 1.1, whiteSpace: 'nowrap'}}>{o.nombre}</div>
-        <div style={{display: 'flex', alignItems: 'center', marginTop: 18}}>
+        {o.precioAntes ? (
+          <div style={{marginTop: 12, fontFamily: sans, fontWeight: 600, fontSize: 44, color: C.cream, lineHeight: 1.15}}>
+            <span style={{position: 'relative', display: 'inline-block'}}>
+              <span style={{letterSpacing: 4, fontSize: 34, opacity: 0.8}}>ANTES </span>${precioTexto(o.precioAntes)}
+              <span style={{position: 'absolute', left: -8, right: -8, top: '50%', height: 6, marginTop: -3, transform: 'rotate(-6deg)'}}>
+                <span
+                  style={{
+                    display: 'block',
+                    width: `${tachado * 100}%`,
+                    height: '100%',
+                    borderRadius: 3,
+                    background: '#e3122f',
+                    boxShadow: '0 2px 10px rgba(227,18,47,0.5)',
+                  }}
+                />
+              </span>
+            </span>
+          </div>
+        ) : null}
+        <div style={{display: 'flex', alignItems: 'center', marginTop: o.precioAntes ? 4 : 18}}>
           <Gold style={{fontFamily: sans, fontWeight: 800, fontSize: 168, lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: -4}}>
             <span style={{fontSize: 90, verticalAlign: 'top', marginRight: 10, lineHeight: 1.5}}>$</span>
             {precioTexto(o.precio * cuenta)}
@@ -77,6 +100,13 @@ const Tarjeta: React.FC<{o: Oferta; delay: number; dur: number}> = ({o, delay, d
             <Tag size={44} style={{letterSpacing: 2, padding: '8px 22px', textTransform: 'none'}}>kg</Tag>
           </div>
         </div>
+        {ahorra > 0 ? (
+          <div style={{marginTop: 22, transformOrigin: 'left center', transform: `scale(${ahorro})`, opacity: Math.min(1, ahorro)}}>
+            <Tag size={36} style={{letterSpacing: 1, textTransform: 'none', fontWeight: 600}}>
+              Ahorrás <b style={{fontWeight: 800}}>${precioTexto(ahorra)}</b> por kilo
+            </Tag>
+          </div>
+        ) : null}
       </div>
     </div>
   );
